@@ -9,12 +9,12 @@ class Config:
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///cloudbin.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # === Cognito Integration (for flask-cognito-jwt) ===
+    # === Cognito Integration (manual JWT) ===
     COGNITO_REGION = "ap-south-1"
-    COGNITO_USERPOOL_ID = "ap-south-1_Ao0mScleB"
-    COGNITO_AUDIENCE = "27ffhauroo1smnd30nuv7nok2j"  # App Client ID used as audience
+    COGNITO_USERPOOL_ID = "ap-south-1_8Tc9LaxpD"  # Replace if different
+    COGNITO_AUDIENCE = "43u1tar1ranvnlio2pqs4t8qjh"  # App Client ID (Audience)
     COGNITO_DOMAIN = "cloudbin.auth.ap-south-1.amazoncognito.com"
-    COGNITO_REDIRECT_URI = "http://localhost:5000/callback"  # Replace with your public EC2 IP or domain
+    COGNITO_REDIRECT_URI = "http://13.203.227.20/callback"  # Replace with actual EC2 public IP
 
     # === Optional Hosted UI Scopes ===
     COGNITO_AUTH_REQUEST_SCOPE = "email openid profile"
