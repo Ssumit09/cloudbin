@@ -1,13 +1,13 @@
-from flask import Flask, render_template, redirect, url_for, flash
+from flask import Flask, render_template, redirect, url_for, flash, request
 from models import db, EwasteRequest, Voucher
 from config import Config
-from flask_cognito_auth import CognitoAuth
+from flask_cognito_jwt import CognitoJWT
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# === Initialize Cognito & Database ===
-cognito = CognitoAuth(app)
+# === Initialize Cognito JWT & Database ===
+cognito = CognitoJWT(app)
 db.init_app(app)
 
 # === Create tables ===
@@ -28,51 +28,40 @@ def index():
 
 @app.route('/login')
 def login():
-    return redirect(cognito.get_sign_in_url())
+    return redirect("https://" + app.config["COGNITO_DOMAIN"] + "/login?response_type=token&client_id=" + app.config["COGNITO_AUDIENCE"] + "&redirect_uri=" + app.config["COGNITO_REDIRECT_URI"])
 
 @app.route('/callback')
-@cognito.callback
+@cognito.jwt_required
 def callback():
     return redirect(url_for('user_dashboard'))
 
 @app.route('/user/dashboard')
-@cognito.auth_required
+@cognito.jwt_required
 def user_dashboard():
     user_email = cognito.claims.get("email")
-    user_id = cognito.claims.get("sub")  # Use this as unique ID
-
-    # Try fetching by email (adapt based on your DB structure)
-    user = db.session.query(Voucher).first()  # Dummy usage, adapt
+    user_id = cognito.claims.get("sub")
     requests = EwasteRequest.query.filter_by(user_id=user_id).all()
-
     return render_template('user_dashboard.html', user_email=user_email, requests=requests)
 
 @app.route('/admin/dashboard')
-@cognito.auth_required
+@cognito.jwt_required
 def admin_dashboard():
     user_email = cognito.claims.get("email")
     if user_email != "admin@cloudbin.com":
         flash("Admin access only.", "danger")
         return redirect(url_for('index'))
-
-    pending_requests = db.session.query(
-        EwasteRequest
-    ).filter(EwasteRequest.status == 'pending').all()
-
+    pending_requests = EwasteRequest.query.filter(EwasteRequest.status == 'pending').all()
     return render_template('admin_dashboard.html', requests=pending_requests)
 
 @app.route('/submit-request', methods=['GET', 'POST'])
-@cognito.auth_required
+@cognito.jwt_required
 def submit_request():
-    from flask import request
     user_id = cognito.claims.get("sub")
-
     if request.method == 'POST':
         waste_type = request.form['waste_type']
         quantity = int(request.form['quantity'])
         location = request.form['location']
         coins = quantity * 10
-
         new_request = EwasteRequest(
             user_id=user_id,
             waste_type=waste_type,
@@ -84,17 +73,15 @@ def submit_request():
         db.session.commit()
         flash('Request submitted successfully!', 'success')
         return redirect(url_for('user_dashboard'))
-
     return render_template('submit_request.html')
 
 @app.route('/admin/approve/<int:request_id>')
-@cognito.auth_required
+@cognito.jwt_required
 def approve_request(request_id):
     user_email = cognito.claims.get("email")
     if user_email != "admin@cloudbin.com":
         flash("Admin access only.", "danger")
         return redirect(url_for('index'))
-
     ewaste_request = EwasteRequest.query.get(request_id)
     if ewaste_request:
         ewaste_request.status = 'approved'
@@ -103,13 +90,12 @@ def approve_request(request_id):
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/reject/<int:request_id>')
-@cognito.auth_required
+@cognito.jwt_required
 def reject_request(request_id):
     user_email = cognito.claims.get("email")
     if user_email != "admin@cloudbin.com":
         flash("Admin access only.", "danger")
         return redirect(url_for('index'))
-
     ewaste_request = EwasteRequest.query.get(request_id)
     if ewaste_request:
         ewaste_request.status = 'rejected'
@@ -118,34 +104,29 @@ def reject_request(request_id):
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/vouchers')
-@cognito.auth_required
+@cognito.jwt_required
 def vouchers():
     user_email = cognito.claims.get("email")
     user_id = cognito.claims.get("sub")
-
     available_vouchers = Voucher.query.filter(Voucher.stock > 0).all()
     return render_template('vouchers.html', user_email=user_email, vouchers=available_vouchers)
 
 @app.route('/redeem/<int:voucher_id>')
-@cognito.auth_required
+@cognito.jwt_required
 def redeem_voucher(voucher_id):
     user_id = cognito.claims.get("sub")
     voucher = Voucher.query.get(voucher_id)
-
     if not voucher or voucher.stock <= 0:
         flash('Voucher not available', 'danger')
         return redirect(url_for('vouchers'))
-
-    # You'd usually fetch and update user's coins in DB
     voucher.stock -= 1
     db.session.commit()
     flash(f'Voucher redeemed! Code: {voucher.code}', 'success')
     return redirect(url_for('vouchers'))
 
 @app.route('/logout')
-@cognito.logout
 def logout():
-    return redirect(url_for('index'))
+    return redirect("https://" + app.config["COGNITO_DOMAIN"] + "/logout?client_id=" + app.config["COGNITO_AUDIENCE"] + "&logout_uri=" + app.config["COGNITO_REDIRECT_URI"])
 
 if __name__ == '__main__':
     app.run(debug=True)
