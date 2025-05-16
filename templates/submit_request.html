@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Submit Request{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4>Submit E-Waste Request</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('submit_request') }}">
+                    <div class="mb-3">
+                        <label for="waste_type" class="form-label">E-Waste Type</label>
+                        <select class="form-select" id="waste_type" name="waste_type" required>
+                            <option value="" selected disabled>Select type</option>
+                            <option value="Mobile Phones">Mobile Phones</option>
+                            <option value="Laptops">Laptops</option>
+                            <option value="Tablets">Tablets</option>
+                            <option value="Batteries">Batteries</option>
+                            <option value="Printers">Printers</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quantity" class="form-label">Quantity</label>
+                        <input type="number" class="form-control" id="quantity" name="quantity" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="location" class="form-label">Pickup Location</label>
+                        <textarea class="form-control" id="location" name="location" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="estimated_coins" class="form-label">Estimated Ebin Coins</label>
+                        <input type="text" class="form-control" id="estimated_coins" readonly>
+                    </div>
+                    <button type="submit" class="btn btn-success">Submit Request</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const wasteType = document.getElementById('waste_type');
+    const quantity = document.getElementById('quantity');
+    const estimatedCoins = document.getElementById('estimated_coins');
+    
+    function calculateCoins() {
+        if (wasteType.value && quantity.value) {
+            // Simple calculation - can be enhanced
+            const coins = parseInt(quantity.value) * 10;
+            estimatedCoins.value = coins + ' Ebin Coins';
+        } else {
+            estimatedCoins.value = '';
+        }
+    }
+    
+    wasteType.addEventListener('change', calculateCoins);
+    quantity.addEventListener('input', calculateCoins);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="hero-section bg-light p-5 rounded-lg m-3 text-center">
+    <h1 class="display-4">Welcome to CloudBin</h1>
+    <p class="lead">Your sustainable e-waste management solution</p>
+    <hr class="my-4">
+    <p>Recycle your e-waste and earn Ebin coins to redeem exciting vouchers!</p>
+    {% if 'user_id' not in session %}
+        <a class="btn btn-success btn-lg" href="{{ url_for('register') }}" role="button">Get Started</a>
+    {% endif %}
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Submit E-Waste</h5>
+                <p class="card-text">Submit your e-waste collection request and schedule a pickup.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Earn Ebin Coins</h5>
+                <p class="card-text">Get rewarded with Ebin coins for your e-waste contributions.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Redeem Vouchers</h5>
+                <p class="card-text">Exchange your Ebin coins for Amazon and other popular vouchers.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

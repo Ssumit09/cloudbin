@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-danger text-white">
+        <h4>Pending E-Waste Requests</h4>
+    </div>
+    <div class="card-body">
+        {% if requests %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Quantity</th>
+                        <th>Location</th>
+                        <th>Coins</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req, username in requests %}
+                    <tr>
+                        <td>{{ username }}</td>
+                        <td>{{ req.date_submitted.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ req.waste_type }}</td>
+                        <td>{{ req.quantity }}</td>
+                        <td>{{ req.location }}</td>
+                        <td>{{ req.coins_awarded }}</td>
+                        <td>
+                            <a href="{{ url_for('approve_request', request_id=req.id) }}" class="btn btn-sm btn-success">Approve</a>
+                            <a href="{{ url_for('reject_request', request_id=req.id) }}" class="btn btn-sm btn-danger">Reject</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            No pending requests at this time.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

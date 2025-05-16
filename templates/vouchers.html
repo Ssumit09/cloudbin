@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Redeem Vouchers{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card text-white bg-success">
+            <div class="card-header">Your Balance</div>
+            <div class="card-body">
+                <h1 class="card-title">{{ user.ebin_coins }}</h1>
+                <p class="card-text">Ebin Coins available</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h3 class="mb-4">Available Vouchers</h3>
+<div class="row">
+    {% for voucher in vouchers %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                {{ voucher.name }}
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">{{ voucher.description }}</h5>
+                <p class="card-text">{{ voucher.coins_required }} Ebin Coins</p>
+                {% if user.ebin_coins >= voucher.coins_required %}
+                    <a href="{{ url_for('redeem_voucher', voucher_id=voucher.id) }}" class="btn btn-success">Redeem</a>
+                {% else %}
+                    <button class="btn btn-secondary" disabled>Not enough coins</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
